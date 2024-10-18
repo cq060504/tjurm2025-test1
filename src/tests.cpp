@@ -1,24 +1,43 @@
 #include "tests.h"
-
+#include<cmath>
 // 练习1，实现库函数strlen
-int my_strlen(char *str) {
+    int my_strlen(char *str) {
     /**
      * 统计字符串的长度，太简单了。
      */
-
-    // IMPLEMENT YOUR CODE HERE
-    return 0;
+     // IMPLEMENT YOUR CODE HERE
+    int i=0;
+    while(str[i]!='\0')
+    {
+        i++;
+    }
+    return i;
+   
 }
 
 
 // 练习2，实现库函数strcat
 void my_strcat(char *str_1, char *str_2) {
-    /**
-     * 将字符串str_2拼接到str_1之后，我们保证str_1指向的内存空间足够用于添加str_2。
+    /**str_1之后，我们保证str_1指向的内存空间足够用于添加str_2。
      * 注意结束符'\0'的处理。
      */
-
+    
     // IMPLEMENT YOUR CODE HERE
+    if(str_1!=nullptr&&str_2!=nullptr)
+    {
+       int i=0;
+       while(str_1[i]!='\0')
+       {
+        i++;
+       }
+       int j=my_strlen(str_2);
+       for(int a=0;a<j;a++)
+       {
+        str_1[i]=str_2[a];
+        i++;
+       }
+    }
+    
 }
 
 
@@ -31,7 +50,27 @@ char* my_strstr(char *s, char *p) {
      */
 
     // IMPLEMENT YOUR CODE HERE
-    return 0;
+  
+    char *s1=s;
+    char *s2=p;
+    char *s3=s;
+   while(*s3!='\0')
+    {
+        s1=s3;
+        s2=p;
+        while(*s1==*s2&&*s1 != '\0' && *s2 != '\0')
+        {
+            s1++;
+            s2++;
+        }
+        if(*s2=='\0')
+        {
+            return (char*)s3;
+        }
+        s3++;
+        
+    }
+   return nullptr;
 }
 
 
@@ -96,11 +135,23 @@ void rgb2gray(float *in, float *out, int h, int w) {
      */
 
     // IMPLEMENT YOUR CODE HERE
-    // ...
+  float B,V,R,G;
+    // ...float B,V,R,G;
+  for(int i=0;i<(h*w);i++)
+  {
+   B=*in;
+   G=*(in+1);
+   R=*(in+2);
+   V = 0.1140 * B  + 0.5870 * G + 0.2989 * R;
+   *out=V;
+   in+=3;
+   out++;
+  } 
+    
 }
 
 // 练习5，实现图像处理算法 resize：缩小或放大图像
-void resize(float *in, float *out, int h, int w, int c, float scale) {
+void resize(float *in, float *out, int h, int w,int C, float scale) {
     /**
      * 图像处理知识：
      *  1.单线性插值法
@@ -195,12 +246,58 @@ void resize(float *in, float *out, int h, int w, int c, float scale) {
      *     3. 注意上面的方法中，四个邻居点的坐标可能会超出 src 的范围，
      *        所以需要对其进行边界检查
      */
-
-    int new_h = h * scale, new_w = w * scale;
+      
     // IMPLEMENT YOUR CODE HERE
+    int new_h = h * scale, new_w = w * scale;
+    int a,b,c,d;
+    float Q;
+    float x0,y0;//虚拟像素
+    int x1,y1,x,y;
+    int numh,numw;
+    for( y=0;y<new_h;y++)
+    {     
+        for(x=0;x<new_w;x++)
+        {
+          //求虚拟像素
+          x0=x/scale;
+          y0=y/scale;
+         //对应src像素坐标
+          x1 = static_cast<int>(x0);
+          y1 = static_cast<int>(y0);
+          float dx=x0-x1;
+          float dy=y0-y1;
+           int o=y1*w*3+x1*3;
+          int O=y*new_w*3+x*3;
+          if(x<(new_w-1)&&y<(new_h-1))
+          {
+         
+          for(int k=0;k<C;k++)
+          {
+             a=*(in+o+k);
+          b=*(in+o+3+k);
+          c=*(in+o+w*3+k);
+          d=*(in+o+w*3+3+k);
+           Q=(a*(1-dx)*(1-dy)+b*dx*(1-dy)+c*(1-dx)*dy+d*dx*dy);
+          *(out+O+k)=Q;
+          }
+        }
+         else
+         {
+            for(int k=0;k<C;k++)
 
+         {
+          a=*(in+o-k);
+          b=*(in+o+3-k);
+          c=*(in+o+w*3-k);
+          d=*(in+o+w*3+3-k);
+           Q=(a*(1-dx)*(1-dy)+b*dx*(1-dy)+c*(1-dx)*dy+d*dx*dy);
+          *(out+O-k)=Q;
+         }
+            
+         }
+    }
 }
-
+}
 
 // 练习6，实现图像处理算法：直方图均衡化
 void hist_eq(float *in, int h, int w) {
@@ -219,6 +316,50 @@ void hist_eq(float *in, int h, int w) {
      * (2) 灰度级个数为256，也就是{0, 1, 2, 3, ..., 255}
      * (3) 使用数组来实现灰度级 => 灰度级的映射
      */
+    float arr[256];
+    float arr1[256];
+    int j;
+    for(int i=0;i<256;i++)
+    {
+        arr[i]=0;
+    }
+    for(int i=0;i<256;i++)
+    {
+        arr1[i]=0;
+    }
+    for(int i=0;i<(h*w);i++)
+    {
+        int num=round(*(in+i));
+        arr[num]+=1;
+    }
+    for(int i=0;i<256;i++)
+    {
+        arr[i]/=(h*w);
+    }
+    for(int i=0;i<256;i++)
+    {
+        for(int j=0;j<=i;j++)
+        {
+            arr1[i]+=arr[j];
+        }
+    }
+    for(int i=0;i<256;i++)
+    {
+      arr1[i]=round(arr1[i]*255);
+    }
+    for(int i=0;i<(h*w);i++)
+    {
+        for( j=0;j<256;j++)
+        {
+            if (round(*in)==j)
+            {
+                break;
+            }
+            
+        }
+        *in=arr1[j];
+        in++;
+    }
 
     // IMPLEMENT YOUR CODE HERE
 }
